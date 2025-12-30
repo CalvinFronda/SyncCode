@@ -5,7 +5,7 @@ export interface ExecutionResult {
   stderr: string;
   error?: string;
 }
-
+// TODO: move into env var
 const API_URL = "http://localhost:3000";
 
 export async function executePython(code: string): Promise<ExecutionResult> {

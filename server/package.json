@@ -15,11 +15,14 @@
     "@types/cors": "^2.8.19",
     "child_process": "^1.0.2",
     "cors": "^2.8.5",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "ws": "^8.18.3",
+    "y-websocket": "^3.0.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/node": "^25.0.3",
+    "@types/ws": "^8.18.1",
     "nodemon": "^3.1.11",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
