@@ -1,6 +1,12 @@
 import { spawn } from "child_process";
 
-export function executePython(code: string): Promise<string> {
+interface ExecutionResult {
+  stdout: string;
+  stderr: string;
+  error?: string;
+}
+
+export function executePython(code: string): Promise<ExecutionResult> {
   return new Promise((resolve, reject) => {
     const docker = spawn("docker", [
       "run",
@@ -13,20 +19,23 @@ export function executePython(code: string): Promise<string> {
       "python-runner",
     ]);
 
-    let output = "";
+    let stdout = "";
+    let stderr = "";
 
     docker.stdout.on("data", (data) => {
-      output += data.toString();
+      stdout += data.toString();
     });
 
     docker.stderr.on("data", (data) => {
-      output += data.toString();
+      stderr += data.toString();
     });
 
     docker.on("close", () => {
-      resolve(output);
+      resolve({ stdout, stderr });
     });
 
-    docker.on("error", reject);
+    docker.on("error", (error) => {
+      resolve({ stdout: "", stderr: "", error: error.message });
+    });
   });
 }

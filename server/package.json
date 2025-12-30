@@ -12,7 +12,9 @@
   "author": "Calvin",
   "license": "ISC",
   "dependencies": {
+    "@types/cors": "^2.8.19",
     "child_process": "^1.0.2",
+    "cors": "^2.8.5",
     "express": "^5.2.1"
   },
   "devDependencies": {
