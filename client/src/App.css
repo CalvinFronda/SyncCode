@@ -148,3 +148,133 @@ body {
 .output-container::-webkit-scrollbar-thumb:hover {
   background: #4e4e4e;
 }
+
+/* Landing Page */
+.landing-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #1e1e1e;
+  text-align: center;
+}
+
+.landing-page h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: #fff;
+}
+
+.landing-page p {
+  font-size: 1.2rem;
+  color: #ccc;
+  margin-bottom: 2rem;
+}
+
+.create-button {
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  background-color: #0e639c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.create-button:hover {
+  background-color: #1177bb;
+}
+
+.create-button:disabled {
+  background-color: #4a4a4a;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.input-group {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.name-input {
+  padding: 1rem;
+  font-size: 1.1rem;
+  border-radius: 4px;
+  border: 1px solid #3e3e42;
+  background-color: #252526;
+  color: white;
+  min-width: 250px;
+}
+
+.name-input:focus {
+  outline: 2px solid #0e639c;
+  border-color: transparent;
+}
+
+/* Room Layout */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.editor-output-split {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 10fr 2fr; /* Make output smaller */
+  overflow: hidden;
+}
+
+.bottom-panel {
+  display: flex;
+  border-top: 1px solid #3e3e42;
+  background-color: #252526;
+  overflow-y: auto;
+}
+
+/* User List in Bottom Panel */
+.user-list {
+  padding: 10px;
+  display: flex;
+}
+
+.user-list ul {
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  align-items: center;
+}
+
+.user-list li::before {
+  content: "• ";
+
+  margin-right: 0px; /* Control exact spacing here */
+}
+
+/* Modal */
+.modal {
+  background-color: #252526;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  border: 1px solid #3e3e42;
+}
+
+.modal h1 {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+  color: white;
+}
+
+.modal p {
+  color: #ccc;
+  margin-bottom: 1.5rem;
+}

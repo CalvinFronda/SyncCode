@@ -1,19 +1,24 @@
-interface ExecutionResult {
+export interface ExecutionResult {
   stdout: string;
   stderr: string;
   error?: string;
+  triggeredBy?: string;
 }
 
 interface OutputProps {
   result: ExecutionResult | null;
   isRunning: boolean;
+  triggeredBy?: string;
 }
 
-function Output({ result, isRunning }: OutputProps) {
+function Output({ result, isRunning, triggeredBy }: OutputProps) {
   if (isRunning) {
     return (
       <div className="output-container running">
-        <p>Executing code...</p>
+        <p>
+          Executing code...
+          {triggeredBy && <span className="runner-info"> (Run by {triggeredBy})</span>}
+        </p>
       </div>
     );
   }
@@ -39,7 +44,7 @@ function Output({ result, isRunning }: OutputProps) {
     <div className="output-container">
       {result.stdout && (
         <div className="stdout">
-          <h3>Output</h3>
+          <h3>Output {result.triggeredBy && <span className="runner-label">(Run by {result.triggeredBy})</span>}</h3>
           <pre>{result.stdout}</pre>
         </div>
       )}

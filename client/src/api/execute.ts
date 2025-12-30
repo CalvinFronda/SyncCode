@@ -4,6 +4,7 @@ export interface ExecutionResult {
   stdout: string;
   stderr: string;
   error?: string;
+  triggeredBy?: string;
 }
 // TODO: move into env var
 const API_URL = "http://localhost:3000";
