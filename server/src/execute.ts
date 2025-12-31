@@ -5,8 +5,15 @@ interface ExecutionResult {
   stderr: string;
   error?: string;
 }
+const IMAGE_MAP: Record<string, string> = {
+  python: "python-runner",
+  javascript: "js-runner",
+};
 
-export function executePython(code: string): Promise<ExecutionResult> {
+export function executeCode(
+  language: string,
+  code: string
+): Promise<ExecutionResult> {
   return new Promise((resolve, reject) => {
     const docker = spawn("docker", [
       "run",
@@ -16,7 +23,7 @@ export function executePython(code: string): Promise<ExecutionResult> {
       "--cpus=0.5",
       "-e",
       `CODE=${code}`,
-      "python-runner",
+      `${IMAGE_MAP[language]}`,
     ]);
 
     let stdout = "";

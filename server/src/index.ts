@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import { executePython } from "./execute.js";
+import { executeCode } from "./execute.js";
 
 const app = express();
 const PORT = 3000;
@@ -17,7 +17,7 @@ app.use(express.json());
 
 app.post("/execute", async (req, res) => {
   try {
-    const { code } = req.body;
+    const { code, language } = req.body;
 
     if (!code || typeof code !== "string") {
       return res
@@ -25,7 +25,7 @@ app.post("/execute", async (req, res) => {
         .json({ error: "Code is required and must be a string" });
     }
 
-    const result = await executePython(code);
+    const result = await executeCode(language, code);
     res.json(result);
   } catch (error) {
     console.error("Execution error:", error);

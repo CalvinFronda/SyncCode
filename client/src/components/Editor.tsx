@@ -21,7 +21,7 @@ function Editor({
 
   return (
     <MonacoEditor
-      height="500px"
+      height="89vh"
       language={language}
       value={value}
       defaultValue={defaultValue}
