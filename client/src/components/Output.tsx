@@ -6,24 +6,26 @@ export interface ExecutionResult {
 }
 
 interface OutputProps {
-  result: ExecutionResult | null;
+  results: ExecutionResult[];
   isRunning: boolean;
   triggeredBy?: string;
 }
 
-function Output({ result, isRunning, triggeredBy }: OutputProps) {
+function Output({ results, isRunning, triggeredBy }: OutputProps) {
   if (isRunning) {
     return (
       <div className="output-container running">
         <p>
           Executing code...
-          {triggeredBy && <span className="runner-info"> (Run by {triggeredBy})</span>}
+          {triggeredBy && (
+            <span className="runner-info"> (Run by {triggeredBy})</span>
+          )}
         </p>
       </div>
     );
   }
 
-  if (!result) {
+  if (results.length < 1) {
     return (
       <div className="output-container empty">
         <p className="placeholder">Click "Run Code" to see output</p>
@@ -31,34 +33,36 @@ function Output({ result, isRunning, triggeredBy }: OutputProps) {
     );
   }
 
-  if (result.error) {
-    return (
-      <div className="output-container error">
-        <h3>Error</h3>
-        <pre>{result.error}</pre>
-      </div>
-    );
-  }
-
   return (
     <div className="output-container">
-      {result.stdout && (
-        <div className="stdout">
-          <h3>Output {result.triggeredBy && <span className="runner-label">(Run by {result.triggeredBy})</span>}</h3>
-          <pre>{result.stdout}</pre>
-        </div>
-      )}
+      {results.map((result, i) => (
+        <div key={i} className="log-entry">
+          <div className="log-header">
+            {result.triggeredBy ? (
+              <span className="runner-label">Run by {result.triggeredBy}</span>
+            ) : (
+              <span className="runner-label">Run</span>
+            )}
+          </div>
 
-      {result.stderr && (
-        <div className="stderr">
-          <h3>Errors</h3>
-          <pre>{result.stderr}</pre>
-        </div>
-      )}
+          {result.stdout && (
+            <div className="stdout">
+              <pre>{result.stdout}</pre>
+            </div>
+          )}
 
-      {!result.stdout && !result.stderr && (
-        <p className="placeholder">No output</p>
-      )}
+          {result.stderr && (
+            <div className="stderr">
+              <h3>Error</h3>
+              <pre>{result.stderr}</pre>
+            </div>
+          )}
+
+          {!result.stdout && !result.stderr && (
+            <p className="placeholder">No output</p>
+          )}
+        </div>
+      ))}
     </div>
   );
 }

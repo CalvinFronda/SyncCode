@@ -14,6 +14,7 @@ import Output from "../components/Output";
 import UserList from "../components/UserList";
 import Sidebar from "../components/Sidebar";
 import { executeCode, ExecutionResult } from "../api/execute";
+import JoinSessionModal from "@/components/JoinSessionModal";
 
 const DEFAULT_TEXT: Record<string, string> = {
   python: "# print('Hello world')",
@@ -37,12 +38,12 @@ function Room() {
   const ydoc = useMemo(() => new Y.Doc(), []);
   const [editor, setEditor] = useState<any | null>(null);
   const [provider, setProvider] = useState<WebsocketProvider | null>(null);
+  const [outputLog, setOutPutLog] = useState<ExecutionResult[]>([]);
 
   const [code, setCode] = useState<string>(
     '# Write your Python code here\nprint("Hello, World!")'
   );
 
-  const [output, setOutput] = useState<ExecutionResult | null>(null);
   const [isRunning, setIsRunning] = useState<boolean>(false);
 
   const [users, setUsers] = useState<any[]>([]);
@@ -98,6 +99,7 @@ function Room() {
       const newLanguage = configMap.get("language") as string;
       if (newLanguage && newLanguage !== language) {
         setLanguage(newLanguage);
+        setOutPutLog([]); // Reset output log on sync change too
       }
     });
 
@@ -110,11 +112,9 @@ function Room() {
       if (status === "running") {
         setIsRunning(true);
         setTriggeredBy(runner);
-        setOutput(null);
       } else if (status === "completed" && result) {
         setIsRunning(false);
         setTriggeredBy(runner);
-        setOutput({ ...result, triggeredBy: runner });
       }
     });
 
@@ -145,6 +145,7 @@ function Room() {
   const handleLanguageChange = (lang: string) => {
     configMap.set("language", lang);
     setLanguage(lang);
+    setOutPutLog([]); // Reset output log
   };
 
   const handleRun = async () => {
@@ -159,6 +160,7 @@ function Room() {
       const resultWithTrigger = { ...result, triggeredBy: username };
       executionMap.set("result", resultWithTrigger);
       executionMap.set("status", "completed");
+      setOutPutLog((prev) => [...prev, resultWithTrigger]);
     } catch (error) {
       const errorResult = {
         stdout: "",
@@ -169,40 +171,20 @@ function Room() {
       };
       executionMap.set("result", errorResult);
       executionMap.set("status", "completed");
+      setOutPutLog((prev) => [...prev, errorResult]);
     }
   };
-
-  const [inputName, setInputName] = useState("");
 
   if (!username) {
     return (
       <div className="landing-page">
-        <div className="modal">
-          <h1>Join Session</h1>
-          <p>Please enter your name to join the room.</p>
-          <div className="input-group">
-            <input
-              type="text"
-              placeholder="Your Name"
-              value={inputName}
-              onChange={(e) => setInputName(e.target.value)}
-              className="name-input"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && inputName.trim())
-                  setUsername(inputName);
-              }}
-            />
-            <button
-              onClick={() => inputName.trim() && setUsername(inputName)}
-              className="create-button"
-              disabled={!inputName.trim()}
-            >
-              Join Room
-            </button>
-          </div>
-        </div>
+        <JoinSessionModal onInputChange={setUsername} />
       </div>
     );
+  }
+
+  function handleResetOutput() {
+    setOutPutLog([]);
   }
 
   return (
@@ -245,11 +227,14 @@ function Room() {
                 </div>
               </Panel>
               <PanelResizeHandle className="resize-handle" />
-              <Panel minSize={120}>
+              <Panel minSize={20}>
                 <div className="output-section">
-                  <h2>Output</h2>
+                  <div className="output-header">
+                    <h2>Output</h2>
+                    <button onClick={handleResetOutput}>Reset</button>
+                  </div>
                   <Output
-                    result={output}
+                    results={outputLog}
                     isRunning={isRunning}
                     triggeredBy={triggeredBy}
                   />
