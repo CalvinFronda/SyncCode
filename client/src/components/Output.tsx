@@ -35,7 +35,7 @@ function Output({ results, isRunning, triggeredBy }: OutputProps) {
 
   return (
     <div className="output-container">
-      {results.map((result, i) => (
+      {[...results].reverse().map((result, i) => (
         <div key={i} className="log-entry">
           <div className="log-header">
             {result.triggeredBy ? (

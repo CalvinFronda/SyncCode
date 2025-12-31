@@ -115,6 +115,7 @@ function Room() {
       } else if (status === "completed" && result) {
         setIsRunning(false);
         setTriggeredBy(runner);
+        setOutPutLog((prev) => [...prev, { ...result, triggeredBy: runner }]);
       }
     });
 
@@ -145,7 +146,7 @@ function Room() {
   const handleLanguageChange = (lang: string) => {
     configMap.set("language", lang);
     setLanguage(lang);
-    setOutPutLog([]); // Reset output log
+    setOutPutLog([]);
   };
 
   const handleRun = async () => {
@@ -160,7 +161,6 @@ function Room() {
       const resultWithTrigger = { ...result, triggeredBy: username };
       executionMap.set("result", resultWithTrigger);
       executionMap.set("status", "completed");
-      setOutPutLog((prev) => [...prev, resultWithTrigger]);
     } catch (error) {
       const errorResult = {
         stdout: "",
@@ -171,7 +171,6 @@ function Room() {
       };
       executionMap.set("result", errorResult);
       executionMap.set("status", "completed");
-      setOutPutLog((prev) => [...prev, errorResult]);
     }
   };
 
