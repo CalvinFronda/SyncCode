@@ -18,8 +18,7 @@ app.use(express.json());
 app.post("/execute", async (req, res) => {
   try {
     const { code, language } = req.body;
-    console.log("code", code);
-    console.log("language", language);
+
     if (!code || typeof code !== "string") {
       return res
         .status(400)
@@ -27,7 +26,7 @@ app.post("/execute", async (req, res) => {
     }
 
     const result = await executeCode(language, code);
-    console.log(result);
+
     res.json(result);
   } catch (error) {
     console.error("Execution error:", error);

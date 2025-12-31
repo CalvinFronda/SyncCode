@@ -87,24 +87,24 @@ function Room() {
       color: userColor,
     });
 
-    // Listen to awareness changes
-    provider.awareness.on("change", () => {
+    // Observer for awareness
+    const handleAwarenessChange = () => {
       const states = Array.from(provider.awareness.getStates().values());
       const users = states.map((state: any) => state.user).filter(Boolean);
       setUsers(users);
-    });
+    };
 
-    // Listen to config changes
-    configMap.observe(() => {
+    // Observer for config
+    const configObserver = () => {
       const newLanguage = configMap.get("language") as string;
       if (newLanguage && newLanguage !== language) {
         setLanguage(newLanguage);
-        setOutPutLog([]); // Reset output log on sync change too
+        setOutPutLog([]);
       }
-    });
+    };
 
-    // Listen to execution state changes
-    executionMap.observe(() => {
+    // Observer for execution
+    const executionObserver = () => {
       const status = executionMap.get("status") as string;
       const runner = executionMap.get("triggeredBy") as string | undefined;
       const result = executionMap.get("result") as ExecutionResult | undefined;
@@ -117,12 +117,20 @@ function Room() {
         setTriggeredBy(runner);
         setOutPutLog((prev) => [...prev, { ...result, triggeredBy: runner }]);
       }
-    });
+    };
+
+    // Attach listeners
+    provider.awareness.on("change", handleAwarenessChange);
+    configMap.observe(configObserver);
+    executionMap.observe(executionObserver);
 
     setProvider(provider);
+
     return () => {
+      provider.awareness.off("change", handleAwarenessChange);
+      configMap.unobserve(configObserver);
+      executionMap.unobserve(executionObserver);
       provider.destroy();
-      ydoc.destroy();
     };
   }, [ydoc, roomId, username, userColor]);
 
@@ -226,7 +234,7 @@ function Room() {
                 </div>
               </Panel>
               <PanelResizeHandle className="resize-handle" />
-              <Panel minSize={20}>
+              <Panel minSize={170}>
                 <div className="output-section">
                   <div className="output-header">
                     <h2>Output</h2>
