@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useParams } from "react-router";
 import * as Y from "yjs";
 import { WebsocketProvider } from "y-websocket";
@@ -40,9 +40,7 @@ function Room() {
   const [provider, setProvider] = useState<WebsocketProvider | null>(null);
   const [outputLog, setOutPutLog] = useState<ExecutionResult[]>([]);
 
-  const [code, setCode] = useState<string>(
-    '# Write your Python code here\nprint("Hello, World!")'
-  );
+  const [code, setCode] = useState<string>(DEFAULT_TEXT.python);
 
   const [isRunning, setIsRunning] = useState<boolean>(false);
 
@@ -66,6 +64,11 @@ function Room() {
   // Shared configuration state
   const configMap = ydoc.getMap("config");
   const [language, setLanguage] = useState("python");
+  const languageRef = useRef(language);
+
+  useEffect(() => {
+    languageRef.current = language;
+  }, [language]);
 
   // Shared execution state
   const executionMap = ydoc.getMap("execution");
@@ -97,7 +100,7 @@ function Room() {
     // Observer for config
     const configObserver = () => {
       const newLanguage = configMap.get("language") as string;
-      if (newLanguage && newLanguage !== language) {
+      if (newLanguage && newLanguage !== languageRef.current) {
         setLanguage(newLanguage);
         setOutPutLog([]);
       }
@@ -140,8 +143,13 @@ function Room() {
       return;
     }
 
+    const yText = ydoc.getText("monaco");
+    if (yText.toString() === "") {
+      yText.insert(0, DEFAULT_TEXT[language] || DEFAULT_TEXT.python);
+    }
+
     const binding = new MonacoBinding(
-      ydoc.getText("monaco"),
+      yText,
       editor.getModel()!,
       new Set([editor]),
       provider.awareness
@@ -151,9 +159,26 @@ function Room() {
     };
   }, [ydoc, provider, editor]);
 
-  const handleLanguageChange = (lang: string) => {
-    configMap.set("language", lang);
-    setLanguage(lang);
+  const handleLanguageChange = (newLang: string) => {
+    
+    const yText = ydoc.getText("monaco");
+    const currentContent = yText.toString().trim();
+
+    // Check if content matches any default text (so we don't overwrite user code)
+    const isDefault = Object.values(DEFAULT_TEXT).some(
+      (text) => text.trim() === currentContent
+    );
+
+    if (isDefault) {
+      yText.delete(0, yText.length);
+      yText.insert(0, DEFAULT_TEXT[newLang]);
+    }
+
+    
+    configMap.set("language", newLang);
+    
+    
+    setLanguage(newLang);
     setOutPutLog([]);
   };
 
