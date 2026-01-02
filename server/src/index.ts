@@ -2,18 +2,47 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import crypto from "crypto";
-import { executeCode } from "./execute.js";
+import rateLimit from "express-rate-limit";
+import path from "path";
+import { fileURLToPath } from "url";
+import { sessions } from "./session.js";
+import { authenticateSession } from "./middleware/authenticateSession.js";
+import { executeHandler } from "./handlers/executeHandler/executeHandler.js";
 
-type Session = {
-  id: string;
-  role: "interviewer" | "interviewee";
-  createdAt: number;
-};
-
-const sessions = new Map<string, Session>();
 const URL = process.env.NGROK_URL || "http://localhost:5173";
 const app = express();
 const PORT = 3000;
+
+// Trust the first proxy (ngrok, Heroku, etc.)
+// This is required for express-rate-limit to work correctly behind a proxy
+app.set("trust proxy", 1);
+
+export const executeLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 min
+  max: 5, // max 5 requests per minute per session
+  standardHeaders: true,
+  legacyHeaders: false,
+  // Completely disable validation and trust proxy checks
+  validate: {
+    xForwardedForHeader: false,
+    trustProxy: false,
+    ip: false,
+  },
+  keyGenerator: (req) => {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const token = authHeader.split(" ")[1];
+      if (token) return token;
+    }
+    return "no-auth";
+  },
+  skip: (req) => !req.headers.authorization,
+  handler: (req, res) => {
+    res.status(429).json({
+      error: "Too many requests, please try again later.",
+    });
+  },
+});
 
 // Enable CORS for frontend
 app.use(
@@ -26,9 +55,6 @@ app.use(
 app.use(express.json());
 
 // Serve static files from the client dist directory
-import path from "path";
-import { fileURLToPath } from "url";
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -55,44 +81,7 @@ app.post("/session", (req, res) => {
   res.json({ token, role });
 });
 
-app.post("/execute", async (req, res) => {
-  try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ error: "Missing or invalid token" });
-    }
-
-    const token = authHeader.split(" ")[1];
-    if (!token) {
-      return res.status(401).json({ error: "Invalid token format" });
-    }
-
-    const session = sessions.get(token);
-
-    if (!session) {
-      return res.status(401).json({ error: "Invalid session token" });
-    }
-
-    const { code, language = "python" } = req.body;
-
-    if (!code || typeof code !== "string") {
-      return res
-        .status(400)
-        .json({ error: "Code is required and must be a string" });
-    }
-
-    const result = await executeCode(language, code);
-
-    res.json(result);
-  } catch (error) {
-    console.error("Execution error:", error);
-    res.status(500).json({
-      error: error instanceof Error ? error.message : "Internal server error",
-      stdout: "",
-      stderr: "",
-    });
-  }
-});
+app.post("/execute", executeLimiter, authenticateSession, executeHandler);
 
 app.get("/health", (req, res) => {
   res.send("working!");
