@@ -15,6 +15,7 @@ import UserList from "../components/UserList";
 import Sidebar from "../components/Sidebar";
 import { executeCode, ExecutionResult } from "../api/execute";
 import JoinSessionModal from "@/components/JoinSessionModal";
+import axios from "axios";
 
 const DEFAULT_TEXT: Record<string, string> = {
   python: "# print('Hello world')",
@@ -160,7 +161,6 @@ function Room() {
   }, [ydoc, provider, editor]);
 
   const handleLanguageChange = (newLang: string) => {
-    
     const yText = ydoc.getText("monaco");
     const currentContent = yText.toString().trim();
 
@@ -174,22 +174,46 @@ function Room() {
       yText.insert(0, DEFAULT_TEXT[newLang]);
     }
 
-    
     configMap.set("language", newLang);
-    
-    
+
     setLanguage(newLang);
     setOutPutLog([]);
   };
 
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!username || !roomId) return;
+
+    // Fetch session token
+    // Use same logic as execute.ts: Dev -> 3000, Prod -> Relative
+    const baseUrl = import.meta.env.DEV
+      ? "http://localhost:3000"
+      : import.meta.env.VITE_NGROK_URL;
+
+    axios
+      .post(`${baseUrl}/session`, { roomId, username })
+      .then((res) => {
+        setSessionToken(res.data.token);
+      })
+      .catch((err) => {
+        console.error("Failed to get session token", err);
+      });
+  }, [username, roomId]);
+
   const handleRun = async () => {
+    if (!sessionToken) {
+      alert("No session token! Cannot execute.");
+      return;
+    }
+
     // Set shared state to running
     executionMap.set("status", "running");
     executionMap.set("triggeredBy", username);
     executionMap.set("result", null);
 
     try {
-      const result = await executeCode(code, language);
+      const result = await executeCode(code, language, sessionToken);
       // Set shared state to completed with result
       const resultWithTrigger = { ...result, triggeredBy: username };
       executionMap.set("result", resultWithTrigger);

@@ -7,17 +7,29 @@ export interface ExecutionResult {
   triggeredBy?: string;
 }
 // TODO: move into env var
-const API_URL = "http://localhost:3000";
+// In Dev (Vite), point to separate server. In Prod (Express), use relative path.
+const API_URL = import.meta.env.DEV
+  ? "http://localhost:3000"
+  : import.meta.env.VITE_NGROK_URL;
 
 export async function executeCode(
   code: string,
-  language: string = "python"
+  language: string = "python",
+  token: string
 ): Promise<ExecutionResult> {
   try {
-    const response = await axios.post<ExecutionResult>(`${API_URL}/execute`, {
-      code,
-      language,
-    });
+    const response = await axios.post<ExecutionResult>(
+      `${API_URL}/execute`,
+      {
+        code,
+        language,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
