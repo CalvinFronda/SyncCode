@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import crypto from "crypto";
@@ -10,14 +11,14 @@ type Session = {
 };
 
 const sessions = new Map<string, Session>();
-
+const URL = process.env.NGROK_URL || "http://localhost:5173";
 const app = express();
 const PORT = 3000;
 
 // Enable CORS for frontend
 app.use(
   cors({
-    origin: "http://localhost:5173", // Vite's default port
+    origin: URL,
     credentials: true,
   })
 );
@@ -31,16 +32,9 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Ensure we are pointing to the correct dist folder relative to the server bundle
-// If we run from server/dist/index.js, client is at ../../client/dist
-// If we run from server/src/index.ts (dev), client is at ../../client/dist
-// Safest is to resolve from the project root if we know the structure
 const clientDistPath = path.join(__dirname, "../../client/dist");
 
 app.use(express.static(clientDistPath));
-
-// API Routes above...
-// Catch-all route for client-side routing (must be last)
 
 app.post("/session", (req, res) => {
   const { roomId, username } = req.body;
@@ -48,11 +42,6 @@ app.post("/session", (req, res) => {
     return res.status(400).json({ error: "roomId and username are required" });
   }
 
-  // Simple logic: First user in a room is 'interviewer'?
-  // For now, we just assign 'interviewer' to everyone or random?
-  // Let's just default to 'interviewer' as per plan assumption for simplicity,
-  // or maybe check if anyone else is in the room (requires iterating map).
-  // Iterating map is fine for small scale.
   const isFirst = !Array.from(sessions.values()).some((s) => s.id === roomId);
   const role = isFirst ? "interviewer" : "interviewee";
 

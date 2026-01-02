@@ -22,6 +22,12 @@ const DEFAULT_TEXT: Record<string, string> = {
   javascript: "// console.log('Hello World')",
 };
 
+// Fetch session token
+// Use same logic as execute.ts: Dev -> 3000, Prod -> Relative
+const baseUrl = import.meta.env.DEV
+  ? "http://localhost:3000"
+  : import.meta.env.VITE_NGROK_URL;
+console.log(baseUrl);
 function Room() {
   const { id: roomId } = useParams();
   const location = useLocation();
@@ -185,19 +191,17 @@ function Room() {
   useEffect(() => {
     if (!username || !roomId) return;
 
-    // Fetch session token
-    // Use same logic as execute.ts: Dev -> 3000, Prod -> Relative
-    const baseUrl = import.meta.env.DEV
-      ? "http://localhost:3000"
-      : import.meta.env.VITE_NGROK_URL;
-
+    console.log("Fetching session token from:", baseUrl);
     axios
       .post(`${baseUrl}/session`, { roomId, username })
       .then((res) => {
+        console.log("Session token received:", res.data);
         setSessionToken(res.data.token);
       })
       .catch((err) => {
         console.error("Failed to get session token", err);
+        console.error("Request URL was:", `${baseUrl}/session`);
+        console.error("Error details:", err.response?.data || err.message);
       });
   }, [username, roomId]);
 
