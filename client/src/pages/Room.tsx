@@ -3,6 +3,7 @@ import { useLocation, useParams } from "react-router";
 import * as Y from "yjs";
 import { WebsocketProvider } from "y-websocket";
 import { MonacoBinding } from "y-monaco";
+
 import {
   Panel,
   Group as PanelGroup,
@@ -27,7 +28,7 @@ const DEFAULT_TEXT: Record<string, string> = {
 const baseUrl = import.meta.env.DEV
   ? "http://localhost:3000"
   : import.meta.env.VITE_NGROK_URL;
-console.log(baseUrl);
+
 function Room() {
   const { id: roomId } = useParams();
   const location = useLocation();

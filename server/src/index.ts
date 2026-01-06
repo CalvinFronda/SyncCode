@@ -13,7 +13,6 @@ const URL = process.env.NGROK_URL || "http://localhost:5173";
 const app = express();
 const PORT = 3000;
 
-// Trust the first proxy (ngrok, Heroku, etc.)
 // This is required for express-rate-limit to work correctly behind a proxy
 app.set("trust proxy", 1);
 

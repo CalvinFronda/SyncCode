@@ -15,6 +15,7 @@
     "@types/uuid": "^10.0.0",
     "axios": "^1.13.2",
     "lucide-react": "^0.562.0",
+    "monaco-editor": "^0.55.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-resizable-panels": "^4.1.0",
