@@ -151,6 +151,9 @@ function Room() {
       return;
     }
 
+    const model = editor.getModel();
+    if (!model) return;
+
     const yText = ydoc.getText("monaco");
     if (yText.toString() === "") {
       yText.insert(0, DEFAULT_TEXT[language] || DEFAULT_TEXT.python);
@@ -165,7 +168,7 @@ function Room() {
     return () => {
       binding.destroy();
     };
-  }, [ydoc, provider, editor]);
+  }, [ydoc, provider, editor, language]);
 
   const handleLanguageChange = (newLang: string) => {
     const yText = ydoc.getText("monaco");
