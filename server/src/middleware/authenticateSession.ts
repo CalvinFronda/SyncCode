@@ -8,7 +8,7 @@ declare global {
       session?: {
         token: string;
         id: string;
-        role: "interviewer" | "interviewee";
+        role: "interviewer" | "candidate";
         createdAt: number;
       };
     }
