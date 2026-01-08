@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useParams } from "react-router";
+import { v4 as uuidv4 } from "uuid";
 import * as Y from "yjs";
 import { WebsocketProvider } from "y-websocket";
 import { MonacoBinding } from "y-monaco";
@@ -16,6 +17,8 @@ import UserList from "../components/UserList";
 import Sidebar from "../components/Sidebar";
 import { executeCode, ExecutionResult } from "../api/execute";
 import JoinSessionModal from "@/components/JoinSessionModal";
+import ShareSessionModal from "../components/ShareSessionModal";
+
 import axios from "axios";
 
 const DEFAULT_TEXT: Record<string, string> = {
@@ -42,6 +45,9 @@ function Room() {
       sessionStorage.setItem(`syncCode-username-${roomId}`, username);
     }
   }, [roomId, username]);
+
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [role, setRole] = useState<"interviewer" | "candidate">("candidate");
 
   const ydoc = useMemo(() => new Y.Doc(), []);
   const [editor, setEditor] = useState<any | null>(null);
@@ -195,12 +201,33 @@ function Room() {
   useEffect(() => {
     if (!username || !roomId) return;
 
+    // Check for invite token and role in URL
+    const searchParams = new URLSearchParams(location.search);
+    const inviteToken = searchParams.get("token");
+    const requestedRole = searchParams.get("role");
+
+    // Get or create browserId for persistence
+    let browserId = localStorage.getItem("syncCode-browserId");
+    if (!browserId) {
+      browserId = uuidv4();
+      localStorage.setItem("syncCode-browserId", browserId);
+    }
+
     console.log("Fetching session token from:", baseUrl);
     axios
-      .post(`${baseUrl}/session`, { roomId, username })
+      .post(`${baseUrl}/session`, {
+        roomId,
+        username,
+        inviteToken,
+        browserId,
+        requestedRole,
+      })
       .then((res) => {
         console.log("Session token received:", res.data);
         setSessionToken(res.data.token);
+        setRole(res.data.role);
+
+        // Remove token from URL to keep it clean (optional, keeping it simple for now)
       })
       .catch((err) => {
         console.error("Failed to get session token", err);
@@ -251,13 +278,15 @@ function Room() {
     setOutPutLog([]);
   }
 
+  console.log(role);
+
   return (
     <div className="app">
       <header className="app-header">
         <h1>SyncCode Room: {roomId?.slice(0, 8)}...</h1>
         <div className="header-controls">
           <button
-            onClick={() => navigator.clipboard.writeText(window.location.href)}
+            onClick={() => setIsShareModalOpen(true)}
             className="share-button"
           >
             Share Link
@@ -273,7 +302,11 @@ function Room() {
       </header>
 
       <div className="main-content">
-        <Sidebar language={language} setLanguage={handleLanguageChange} />
+        <Sidebar
+          language={language}
+          setLanguage={handleLanguageChange}
+          showNotes={role === "interviewer"}
+        />
 
         <div className="room-layout-right">
           <div className="editor-output-split">
@@ -315,6 +348,13 @@ function Room() {
           </div>
         </div>
       </div>
+      <ShareSessionModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        roomId={roomId || ""}
+        role={role}
+        sessionToken={sessionToken}
+      />
     </div>
   );
 }

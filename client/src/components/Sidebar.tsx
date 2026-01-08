@@ -1,12 +1,18 @@
 interface SidebarProps {
   language: string;
   setLanguage: (lang: string) => void;
+  showNotes: boolean;
 }
 
-function Sidebar({ language, setLanguage }: SidebarProps) {
+function Sidebar({ language, setLanguage, showNotes }: SidebarProps) {
   return (
     <div className="sidebar">
       <div className="sidebar-group">
+        {showNotes && (
+          <>
+            <p> only seen by interviewers</p>
+          </>
+        )}
         <button
           className={`sidebar-icon-btn ${
             language === "python" ? "active" : ""

@@ -65,7 +65,7 @@ A Docker-based code execution environment that safely runs user code in isolated
 ### Session Management
 
 - **Token-Based Authentication**: Secure session tokens for code execution
-- **Role Assignment**: First user in a room becomes the interviewer, others are interviewees
+- **Role Assignment**: First user in a room becomes the interviewer, others are candidates
 - **Session Persistence**: Users stay logged in across page refreshes
 
 ### User Interface
@@ -309,7 +309,7 @@ The application uses Yjs for conflict-free real-time collaboration:
 - UUID-based tokens generated with `crypto.randomUUID()`
 - Tokens stored in server memory (Map)
 - First user in a room assigned "interviewer" role
-- Subsequent users assigned "interviewee" role
+- Subsequent users assigned "candidate" role
 - Token required in Authorization header for code execution
 
 ### Editor Integration
