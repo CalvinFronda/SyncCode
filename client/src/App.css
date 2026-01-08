@@ -19,7 +19,7 @@ body {
 
 .app-header {
   background-color: #252526;
-  padding: 1rem 2rem;
+  padding: 5px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -27,16 +27,28 @@ body {
 }
 
 .app-header h1 {
-  font-size: 1.5rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #ffffff;
+}
+
+.share-button {
+  background-color: grey;
+  color: #ffffff;
+  border: none;
+  padding: 5px;
+  font-size: 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
 }
 
 .run-button {
   background-color: #0e639c;
   color: #ffffff;
   border: none;
-  padding: 0.6rem 1.5rem;
+  padding: 5px;
   font-size: 1rem;
   border-radius: 4px;
   cursor: pointer;
@@ -83,6 +95,10 @@ body {
   font-weight: 500;
   border-bottom: 1px solid #3e3e42;
   color: #cccccc;
+}
+
+.notes-container textarea {
+  padding: 10px;
 }
 
 .output-container {

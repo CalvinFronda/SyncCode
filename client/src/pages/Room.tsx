@@ -17,7 +17,9 @@ import UserList from "../components/UserList";
 import Sidebar from "../components/Sidebar";
 import { executeCode, ExecutionResult } from "../api/execute";
 import JoinSessionModal from "@/components/JoinSessionModal";
+
 import ShareSessionModal from "../components/ShareSessionModal";
+import Notes from "../components/Notes";
 
 import axios from "axios";
 
@@ -25,6 +27,12 @@ const DEFAULT_TEXT: Record<string, string> = {
   python: "# print('Hello world')",
   javascript: "// console.log('Hello World')",
 };
+
+const TABS = [
+  { label: "Output", id: 0 },
+  { label: "Private Interviewer Notes", id: 1 },
+  { label: "Chat", id: 2 },
+];
 
 // Fetch session token
 // Use same logic as execute.ts: Dev -> 3000, Prod -> Relative
@@ -51,6 +59,7 @@ function Room() {
 
   const ydoc = useMemo(() => new Y.Doc(), []);
   const [editor, setEditor] = useState<any | null>(null);
+  const [activeTab, setActiveTab] = useState(0);
   const [provider, setProvider] = useState<WebsocketProvider | null>(null);
   const [outputLog, setOutPutLog] = useState<ExecutionResult[]>([]);
 
@@ -59,6 +68,8 @@ function Room() {
   const [isRunning, setIsRunning] = useState<boolean>(false);
 
   const [users, setUsers] = useState<any[]>([]);
+
+  const isInterviewer = role === "interviewer";
 
   // helper for random color (still randomized)
   const userColor = useMemo(() => {
@@ -284,7 +295,7 @@ function Room() {
     <div className="app">
       <header className="app-header">
         <h1>SyncCode Room: {roomId?.slice(0, 8)}...</h1>
-        <div className="header-controls">
+        <div className="flex gap-2">
           <button
             onClick={() => setIsShareModalOpen(true)}
             className="share-button"
@@ -324,17 +335,46 @@ function Room() {
                 </div>
               </Panel>
               <PanelResizeHandle className="resize-handle" />
+
               <Panel minSize={170}>
-                <div className="output-section">
-                  <div className="output-header">
-                    <h2>Output</h2>
-                    <button onClick={handleResetOutput}>Reset</button>
+                <div className="output-section h-full flex flex-col">
+                  <div className="output-header flex justify-between items-center bg-[#2d2d30] px-6 py-2 border-b border-[#3e3e42]">
+                    <div className="flex gap-4">
+                      {TABS.map((tab) => (
+                        <button
+                          key={tab.id}
+                          onClick={() => setActiveTab(tab.id)}
+                          className={`bg-transparent  cursor-pointer py-1 text-sm font-medium transition-colors ${
+                            activeTab === tab.id
+                              ? "text-white border-b-2 border-orange-300"
+                              : "text-[#858585] hover:text-[#cccccc]"
+                          }`}
+                        >
+                          {tab.label}
+                        </button>
+                      ))}
+                    </div>
+                    {activeTab === 0 && (
+                      <button onClick={handleResetOutput}>Reset</button>
+                    )}
                   </div>
-                  <Output
-                    results={outputLog}
-                    isRunning={isRunning}
-                    triggeredBy={triggeredBy}
-                  />
+
+                  <div className="flex-1 overflow-hidden relative">
+                    {activeTab === 0 && (
+                      <Output
+                        results={outputLog}
+                        isRunning={isRunning}
+                        triggeredBy={triggeredBy}
+                      />
+                    )}
+
+                    {activeTab === 1 && isInterviewer && <Notes />}
+                    {activeTab === 2 && isInterviewer && (
+                      <div className="p-4 text-[#858585] italic text-center">
+                        Chat coming soon...
+                      </div>
+                    )}
+                  </div>
                 </div>
               </Panel>
             </PanelGroup>
